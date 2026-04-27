@@ -107,6 +107,7 @@ html,body{height:100%;overflow:hidden;background:var(--dark);font-family:"Noto S
 .sc2{width:100%;padding:14px;background:white;border:none;border-radius:12px;font-size:15px;color:#8b2020;font-family:inherit;cursor:pointer;font-weight:500}
 @keyframes fup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -133,7 +134,7 @@ html,body{height:100%;overflow:hidden;background:var(--dark);font-family:"Noto S
           <div class="rb"><div class="rl">✦ หยุดคิดสักครู่</div><div class="rt" id="cr"></div></div>
         </div>
         <div class="ca">
-          <button class="btn bo" onclick="openShare()">↗ แชร์</button>
+          <button class="btn bo" onclick="saveImg()" id="saveBtn">⬇ เซฟภาพ</button>
           <button class="btn bf" onclick="rnd()">✦ บทใหม่</button>
         </div>
       </div>
@@ -179,18 +180,15 @@ html,body{height:100%;overflow:hidden;background:var(--dark);font-family:"Noto S
     <div class="nb" data-p="about"><div class="ni">☯</div><div class="nl">เกี่ยวกับ</div></div>
   </div>
 </div>
-<div class="ov" id="ov" onclick="if(event.target===this)closeShare()">
+<div class="ov" id="ov">
   <div class="sh2">
-    <div class="st">แชร์บทแห่งวัน</div>
-    <div class="sg">
-      <div class="sbt"><div class="sic" style="background:#25D366">💬</div><div class="slb">LINE</div></div>
-      <div class="sbt"><div class="sic" style="background:#1877F2">📘</div><div class="slb">Facebook</div></div>
-      <div class="sbt"><div class="sic" style="background:linear-gradient(135deg,#f09433,#dc2743,#bc1888)">📸</div><div class="slb">Instagram</div></div>
-      <div class="sbt"><div class="sic" style="background:#000">🎵</div><div class="slb">TikTok</div></div>
+    <div class="st">⬇ กำลังสร้างภาพ...</div>
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:32px;animation:spin 1s linear infinite;display:inline-block">⏳</div>
     </div>
-    <button class="sc2" onclick="closeShare()">ยกเลิก</button>
   </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 // ══ ข้อมูล 81 บท ฝังตรงนี้ — ไม่มีการเรียก API ทุกกรณี ══
 const C=[
@@ -702,6 +700,150 @@ function goPanel(name){
   if(name==="list")buildList(document.getElementById("qi").value);
 }
 document.querySelectorAll(".tab,.nb").forEach(el=>el.addEventListener("click",()=>goPanel(el.dataset.p)));
+
+async function saveImg(){
+  const c = C[cur];
+  const btn = document.getElementById("saveBtn");
+  
+  // Show loading overlay
+  document.getElementById("ov").classList.add("show");
+  btn.textContent = "⏳ กำลังสร้าง...";
+  btn.disabled = true;
+
+  try {
+    // Create a standalone card element for clean export
+    const exportEl = document.createElement("div");
+    exportEl.style.cssText = `
+      width:390px; background:#faf6ee;
+      font-family:'Noto Serif Thai',serif;
+      border-radius:12px; overflow:hidden;
+      box-shadow:0 4px 32px rgba(0,0,0,.18);
+      position:fixed; left:-9999px; top:0;
+    `;
+
+    // Art banner
+    const artDiv = document.createElement("div");
+    artDiv.style.cssText = "width:100%;height:200px;background:#0f0c09;position:relative;";
+    const artCanvas = document.createElement("canvas");
+    artCanvas.style.cssText = "width:100%;height:100%;display:block;";
+    artCanvas.width = 390*2; artCanvas.height = 200*2;
+    artDiv.appendChild(artCanvas);
+
+    // Chapter badge
+    const badge = document.createElement("div");
+    badge.style.cssText = "position:absolute;top:14px;right:16px;font-family:'Noto Serif SC',serif;font-size:13px;color:rgba(245,240,232,.45);letter-spacing:3px;";
+    badge.textContent = "第 "+c.n+" 章";
+    artDiv.appendChild(badge);
+
+    // Mood tag
+    const moodTag = document.createElement("div");
+    moodTag.style.cssText = "position:absolute;bottom:14px;left:16px;font-size:12px;color:rgba(200,169,110,.8);background:rgba(15,12,9,.55);padding:4px 12px;border-radius:20px;letter-spacing:1.5px;";
+    moodTag.textContent = c.m;
+    artDiv.appendChild(moodTag);
+
+    exportEl.appendChild(artDiv);
+
+    // Body
+    const body = document.createElement("div");
+    body.style.cssText = "padding:22px 20px 20px;";
+
+    // Title
+    const title = document.createElement("div");
+    title.style.cssText = "font-size:18px;font-weight:600;color:#1a1410;margin-bottom:3px;";
+    title.textContent = c.t;
+    body.appendChild(title);
+
+    // Chapter num
+    const num = document.createElement("div");
+    num.style.cssText = "font-size:11px;color:#c8a96e;letter-spacing:2px;margin-bottom:16px;font-family:'Noto Serif SC',serif;";
+    num.textContent = "道德經 · บทที่ "+c.n+" จาก 81";
+    body.appendChild(num);
+
+    // Original Chinese
+    const orig = document.createElement("div");
+    orig.style.cssText = "font-family:'Noto Serif SC',serif;font-size:16px;line-height:2;color:#1a1410;letter-spacing:3px;text-align:center;padding:14px 8px;border-top:1px solid #e2d9c8;border-bottom:1px solid #e2d9c8;margin-bottom:18px;white-space:pre-line;";
+    orig.textContent = c.o;
+    body.appendChild(orig);
+
+    // Poem
+    const poemWrap = document.createElement("div");
+    poemWrap.style.cssText = "border-left:2px solid rgba(200,169,110,.45);padding:2px 0 2px 16px;margin-bottom:18px;";
+    const poem = document.createElement("div");
+    poem.style.cssText = "font-size:15px;line-height:2.1;color:#1a1410;font-style:italic;white-space:pre-line;font-weight:300;";
+    poem.textContent = c.p;
+    poemWrap.appendChild(poem);
+    body.appendChild(poemWrap);
+
+    // Interpretation label
+    const lbl = document.createElement("div");
+    lbl.style.cssText = "font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#8b7355;margin-bottom:8px;";
+    lbl.textContent = "ตีความ";
+    body.appendChild(lbl);
+
+    // Interpretation
+    const interp = document.createElement("div");
+    interp.style.cssText = "font-size:14px;line-height:1.9;color:#2a2018;margin-bottom:16px;";
+    interp.textContent = c.i;
+    body.appendChild(interp);
+
+    // Reflection box
+    const rfBox = document.createElement("div");
+    rfBox.style.cssText = "background:linear-gradient(135deg,#fdf8ee,#f5edd8);border-radius:4px;padding:14px 16px;margin-bottom:16px;";
+    const rfLbl = document.createElement("div");
+    rfLbl.style.cssText = "font-size:10px;letter-spacing:2px;color:#a8893a;margin-bottom:6px;text-transform:uppercase;";
+    rfLbl.textContent = "✦ หยุดคิดสักครู่";
+    const rfText = document.createElement("div");
+    rfText.style.cssText = "font-size:13px;line-height:1.75;color:#8b7355;font-style:italic;";
+    rfText.textContent = c.rf;
+    rfBox.appendChild(rfLbl);
+    rfBox.appendChild(rfText);
+    body.appendChild(rfBox);
+
+    // Footer watermark
+    const footer = document.createElement("div");
+    footer.style.cssText = "text-align:center;font-size:11px;color:rgba(139,115,85,.5);letter-spacing:2px;padding-bottom:4px;font-family:'Noto Serif SC',serif;";
+    footer.textContent = "道 · เต๋าแห่งวัน";
+    body.appendChild(footer);
+
+    exportEl.appendChild(body);
+    document.body.appendChild(exportEl);
+
+    // Draw art on the export canvas
+    const ctx2 = artCanvas.getContext("2d");
+    ctx2.scale(2,2);
+    // Copy art from main canvas
+    const mainCanvas = document.getElementById("cv");
+    ctx2.drawImage(mainCanvas, 0, 0, 195, 200);
+
+    // Capture with html2canvas
+    await new Promise(r => setTimeout(r, 200)); // wait for fonts
+
+    const canvas = await html2canvas(exportEl, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: "#faf6ee",
+      logging: false,
+      width: 390,
+    });
+
+    document.body.removeChild(exportEl);
+
+    // Download
+    const link = document.createElement("a");
+    link.download = "เต๋า-บทที่"+c.n+"-"+c.t+".png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+
+  } catch(err) {
+    console.error(err);
+    alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
+  }
+
+  document.getElementById("ov").classList.remove("show");
+  btn.textContent = "⬇ เซฟภาพ";
+  btn.disabled = false;
+}
 
 function openShare(){document.getElementById("ov").classList.add("show");}
 function closeShare(){document.getElementById("ov").classList.remove("show");}
