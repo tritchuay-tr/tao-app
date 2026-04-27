@@ -21,30 +21,5 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshots/screen1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
-  "categories": ["lifestyle", "health", "education"],
-  "shortcuts": [
-    {
-      "name": "บทแห่งวัน",
-      "short_name": "วันนี้",
-      "description": "เปิดบทประจำวัน",
-      "url": "/?shortcut=daily",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "สุ่มบท",
-      "short_name": "สุ่ม",
-      "description": "สุ่มบทใหม่",
-      "url": "/?shortcut=random",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
-    }
   ]
 }
